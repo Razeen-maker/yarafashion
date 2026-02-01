@@ -5,182 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YARA FASHION MASTER POS</title>
     <style>
-        :root { --violet: #9400D3; --gold: #DAA520; --dark: #2c3e50; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 15px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 5px solid var(--violet); }
-        h2 { color: var(--violet); margin-top: 0; display: flex; align-items: center; gap: 10px; }
-        label { display: block; margin: 10px 0 5px; font-weight: bold; color: var(--dark); }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        :root { --violet: #9400D3; --gold: #DAA520; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 15px; margin: 0; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 6px solid var(--violet); max-width: 450px; margin: auto; }
+        h2 { color: var(--violet); text-align: center; margin-bottom: 20px; }
+        label { display: block; margin: 10px 0 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px; transition: 0.3s; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; margin-top: 10px; cursor: pointer; }
         .btn-add { background: #3498db; }
         .btn-new { background: #7f8c8d; }
-        .btn-save { background: #27ae60; width: 100%; }
-        .btn-wa { background: #25D366; }
+        .btn-save { background: #27ae60; }
         .btn-receipt { background: #8e44ad; }
-        .btn:active { transform: scale(0.98); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-        th { background: #ecf0f1; padding: 10px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 10% auto; padding: 20px; width: 90%; max-width: 400px; border-radius: 10px; }
-        .receipt-text { font-family: monospace; white-space: pre-wrap; font-size: 14px; line-height: 1.2; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
+        .modal-content { background: white; margin: 10% auto; padding: 20px; width: 85%; border-radius: 10px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>🌸 CREATE BILL</h2>
-    
+    <h2>🌸 YARA FASHION</h2>
     <div class="grid-2">
-        <div><label>Customer</label><input type="text" id="cust-name" placeholder="Name"></div>
-        <div><label>WhatsApp</label><input type="number" id="cust-phone" placeholder="07xxxxxxxx"></div>
+        <div><label>Customer</label><input type="text" id="name" placeholder="Name"></div>
+        <div><label>WhatsApp</label><input type="number" id="phone" placeholder="07xxxxxxxx"></div>
     </div>
-
-    <label>Fabric Type</label>
-    <select id="fabric-type">
-        <option>-- Choose Fabric --</option>
-        <option>40sP</option><option>60sP</option><option>Cotton</option>
-        <option>Silk</option><option>Linen</option><option>Viscose</option>
-    </select>
-
-    <div class="grid-3">
-        <div><label>Cost</label><input type="number" id="cost" value="0"></div>
+    <label>Fabric</label>
+    <select id="type"><option>40sP</option><option>60sP</option><option>Silk</option><option>Linen</option></select>
+    <div class="grid-2">
         <div><label>Price</label><input type="number" id="price" value="0"></div>
         <div><label>Yards</label><input type="number" id="yards" value="0"></div>
     </div>
-
     <div class="grid-2">
         <button class="btn btn-add" onclick="addItem()">➕ ADD TO BILL</button>
-        <button class="btn btn-new" onclick="newCustomer()">👤 NEW CUSTOMER</button>
+        <button class="btn btn-new" onclick="newCust()">👤 NEW CUSTOMER</button>
     </div>
-
-    <div class="grid-2" style="margin-top:20px;">
-        <div><label>Discount</label><input type="number" id="discount" value="0" oninput="calculateTotal()"></div>
-        <div style="text-align:right;"><label>Net Total</label><div id="net-total" style="font-size:24px; font-weight:bold;">0</div></div>
+    <div style="text-align:right; margin: 15px 0;">
+        <label>Total LKR</label>
+        <div id="display-total" style="font-size:30px; font-weight:bold; color:var(--violet);">0</div>
     </div>
-
-    <button class="btn btn-save" onclick="saveSale()">✅ RECORD & SAVE SALE</button>
-    
-    <div class="grid-2">
-        <button class="btn btn-wa" onclick="sendWhatsApp()">📱 WA TOTAL</button>
-        <button class="btn btn-receipt" onclick="showReceipt()">📄 PREVIEW RECEIPT</button>
-    </div>
+    <button class="btn btn-save" onclick="save()">✅ RECORD SALE</button>
+    <button class="btn btn-receipt" onclick="show()">📄 PREVIEW RECEIPT</button>
 </div>
 
-<div class="card" style="margin-top:20px;">
-    <h3>📊 SALES HISTORY</h3>
-    <button class="btn" style="background:#2c3e50; margin-bottom:10px;" onclick="copyForExcel()">📋 COPY REPORT FOR EXCEL</button>
-    <div id="sales-list"></div>
-</div>
-
-<div id="receipt-modal" class="modal">
+<div id="modal" class="modal">
     <div class="modal-content">
-        <div id="receipt-header" style="text-align:center; margin-bottom:15px;">
-            <img src="https://i.ibb.co/VWVm0YmC/yara-luxury-logo.png" alt="Logo" style="width:80px; margin-bottom:10px;">
-            <h2 style="margin:0; color:#9400D3; justify-content: center;">YARA FASHION</h2>
-            <i style="color:#DAA520; font-size:0.9em;">Crafted with Elegance</i><br>
-            <small>Hambantota | 077 882 2514</small>
-        </div>
-        <hr>
-        <div id="receipt-body" class="receipt-text"></div>
-        <hr>
-        <button class="btn" style="background:#506477;" onclick="copyReceipt()">📋 COPY & SHARE RECEIPT</button>
-        <button class="btn" style="background:black;" onclick="closeModal()">CLOSE</button>
+        <img src="https://i.postimg.cc/mD8z778S/yara-logo.png" style="width:100px; margin-bottom:10px;">
+        <h2 style="margin:0;">YARA FASHION</h2>
+        <i style="color:var(--gold);">Crafted with Elegance</i><hr>
+        <div id="receipt-data" style="text-align:left; font-family:monospace; white-space:pre; margin:15px 0;"></div>
+        <button class="btn" style="background:black;" onclick="document.getElementById('modal').style.display='none'">CLOSE</button>
     </div>
 </div>
 
 <script>
-    let currentItems = [];
-    let salesHistory = JSON.parse(localStorage.getItem('yara_sales')) || [];
-
+    let bill = [];
     function addItem() {
-        const type = document.getElementById('fabric-type').value;
-        const prc = parseFloat(document.getElementById('price').value);
-        const qty = parseFloat(document.getElementById('yards').value);
-        if(prc > 0 && qty > 0) {
-            currentItems.push({type, prc, qty, tot: prc * qty});
-            calculateTotal();
+        const t = document.getElementById('type').value;
+        const p = parseFloat(document.getElementById('price').value);
+        const y = parseFloat(document.getElementById('yards').value);
+        if(p > 0 && y > 0) {
+            bill.push({t, p, y, tot: p*y});
+            let sum = bill.reduce((a, b) => a + b.tot, 0);
+            document.getElementById('display-total').innerText = sum.toLocaleString();
+            alert("Added to bill!");
         }
     }
-
-    function calculateTotal() {
-        let sub = currentItems.reduce((a, b) => a + b.tot, 0);
-        let disc = parseFloat(document.getElementById('discount').value) || 0;
-        document.getElementById('net-total').innerText = (sub - disc).toLocaleString();
+    function newCust() {
+        bill = []; document.getElementById('name').value = '';
+        document.getElementById('display-total').innerText = '0';
+        alert("Cleared for New Customer");
     }
-
-    function newCustomer() {
-        if(confirm("Start a new bill? Current items will be cleared.")) {
-            currentItems = [];
-            document.getElementById('cust-name').value = '';
-            document.getElementById('cust-phone').value = '';
-            document.getElementById('discount').value = '0';
-            calculateTotal();
-        }
+    function show() {
+        let text = `Date: ${new Date().toLocaleDateString()}\n`;
+        bill.forEach(i => text += `${i.t}: ${i.p} x ${i.y} = ${i.tot}\n`);
+        text += `\nTOTAL: LKR ${document.getElementById('display-total').innerText}`;
+        document.getElementById('receipt-data').innerText = text;
+        document.getElementById('modal').style.display = 'block';
     }
-
-    function saveSale() {
-        const name = document.getElementById('cust-name').value || "Cash Customer";
-        const total = document.getElementById('net-total').innerText;
-        const sale = { date: new Date().toLocaleDateString(), name, total };
-        salesHistory.unshift(sale);
-        localStorage.setItem('yara_sales', JSON.stringify(salesHistory));
-        renderHistory();
-        alert("Sale Recorded!");
-    }
-
-    function renderHistory() {
-        let html = '<table><tr><th>Date</th><th>Customer</th><th>Total</th></tr>';
-        salesHistory.forEach(s => {
-            html += `<tr><td>${s.date}</td><td>${s.name}</td><td>${s.total}</td></tr>`;
-        });
-        document.getElementById('sales-list').innerHTML = html + '</table>';
-    }
-
-    function showReceipt() {
-        const name = document.getElementById('cust-name').value || "Customer";
-        const date = new Date().toLocaleDateString();
-        let body = `Date: ${date}\nCust: ${name}\n\n`;
-        body += `FABRIC        PRC      QTY      TOT\n`;
-        body += `------------------------------------\n`;
-        currentItems.forEach(i => {
-            body += `${i.type.padEnd(12)} ${i.prc.toString().padEnd(8)} ${i.qty.toString().padEnd(8)} ${i.tot}\n`;
-        });
-        body += `------------------------------------\n`;
-        body += `Subtotal: LKR ${currentItems.reduce((a,b)=>a+b.tot,0)}\n`;
-        body += `Discount: -LKR ${document.getElementById('discount').value}\n`;
-        body += `\nTOTAL: LKR ${document.getElementById('net-total').innerText}`;
-        
-        document.getElementById('receipt-body').innerText = body;
-        document.getElementById('receipt-modal').style.display = 'block';
-    }
-
-    function closeModal() { document.getElementById('receipt-modal').style.display = 'none'; }
-
-    function copyReceipt() {
-        const header = "YARA FASHION - Crafted with Elegance\n";
-        navigator.clipboard.writeText(header + document.getElementById('receipt-body').innerText);
-        alert("Receipt Copied for WhatsApp!");
-    }
-
-    function sendWhatsApp() {
-        const name = document.getElementById('cust-name').value;
-        const total = document.getElementById('net-total').innerText;
-        const msg = `Hello ${name}, your total at Yara Fashion is LKR ${total}. Thank you!`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
-    }
-
-    function copyForExcel() {
-        let csv = "Date,Customer,Total\n";
-        salesHistory.forEach(s => csv += `${s.date},${s.name},${s.total}\n`);
-        navigator.clipboard.writeText(csv);
-        alert("Report copied! Paste into Excel or Google Sheets.");
-    }
-
-    window.onload = renderHistory;
+    function save() { alert("Sale Saved!"); }
 </script>
-
 </body>
 </html>
