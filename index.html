@@ -15,6 +15,7 @@
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
         .btn { width: 100%; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; height: 48px; }
         .btn-add { background: var(--blue); }
+        .btn-new { background: #718096; } /* Gray for New Customer */
         .btn-save { background: var(--green); }
         .btn-wa { background: var(--wa); }
         .btn-preview { background: var(--purple); }
@@ -44,7 +45,12 @@
         <div><label>Price</label><input type="number" id="inSell" placeholder="0"></div>
         <div><label>Yards</label><input type="number" id="inQty" placeholder="0"></div>
     </div>
-    <button class="btn btn-add" onclick="addItem()">➕ ADD TO BILL</button>
+    
+    <div class="grid-2">
+        <button class="btn btn-add" onclick="addItem()">➕ ADD TO BILL</button>
+        <button class="btn btn-new" onclick="newCustomer()">👤 NEW CUSTOMER</button>
+    </div>
+
     <table id="billTable" style="display:none;">
         <thead><tr><th>Item</th><th>Yds</th><th>Total</th><th></th></tr></thead>
         <tbody id="billBody"></tbody>
@@ -74,8 +80,12 @@
 
 <div id="receipt-overlay">
     <div class="receipt-box">
-        <h2 style="text-align:center; margin:0;">YARA FASHION</h2>
-        <p style="text-align:center; font-size:0.8rem;">Hambantota | 077 882 2514</p>
+        <div style="text-align:center; margin-bottom:15px;">
+            <img src="https://i.ibb.co/YBjX9yv/yara-logo.jpg" style="max-width: 100px; height: auto; border-radius: 8px;">
+            <h2 style="margin: 5px 0 0 0; color: #000;">YARA FASHION</h2>
+            <p style="font-style: italic; font-size: 0.75rem; margin: 2px 0; color: #d53f8c; font-weight: bold;">Crafted with Elegance</p>
+            <p style="font-size: 0.8rem; margin: 0;">Hambantota | 077 882 2514</p>
+        </div>
         <hr>
         <p style="font-size:0.8rem;">Date: <span id="rDate"></span><br>Cust: <span id="rCust"></span></p>
         <table style="width:100%; font-size:0.8rem;">
@@ -89,7 +99,7 @@
             <h3>TOTAL: LKR <span id="rNet">0</span></h3>
         </div>
         <button class="btn btn-share" onclick="shareReceipt()">📋 COPY & SHARE RECEIPT</button>
-        <button class="btn" style="background:#000; margin-top:5px;" onclick="document.getElementById('receipt-overlay').style.display='none'">CLOSE PREVIEW</button>
+        <button class="btn" style="background:#000;" onclick="document.getElementById('receipt-overlay').style.display='none'">CLOSE</button>
     </div>
 </div>
 
@@ -124,6 +134,15 @@
         currentBill.push({ f, s, q, b, total: s*q });
         renderBill();
         document.getElementById('inQty').value = "";
+    }
+
+    function newCustomer() {
+        if(currentBill.length > 0 && !confirm("Current bill isn't saved. Start new customer anyway?")) return;
+        currentBill = [];
+        document.getElementById('custName').value = "";
+        document.getElementById('custPhone').value = "";
+        document.getElementById('inDisc').value = "0";
+        renderBill();
     }
 
     function renderBill() {
@@ -170,11 +189,11 @@
     }
 
     function shareReceipt() {
-        let text = `🌸 *YARA FASHION*\nDate: ${new Date().toLocaleDateString()}\nCust: ${document.getElementById('custName').value || "Customer"}\n--------------------------\n`;
+        let text = `🌸 *YARA FASHION*\n*Crafted with Elegance*\nDate: ${new Date().toLocaleDateString()}\nCust: ${document.getElementById('custName').value || "Customer"}\n--------------------------\n`;
         currentBill.forEach(i => { text += `${i.f} (${i.q} yds) @ ${i.s} = ${i.total.toFixed(0)}\n`; });
-        text += `--------------------------\nDiscount: -LKR ${document.getElementById('inDisc').value || 0}\n*TOTAL: LKR ${document.getElementById('netDisplay').innerText}*`;
+        text += `--------------------------\nDiscount: -LKR ${document.getElementById('inDisc').value || 0}\n*TOTAL: LKR ${document.getElementById('netDisplay').innerText}*\nThank you!`;
         navigator.clipboard.writeText(text);
-        alert("Full Receipt copied! Paste it into WhatsApp.");
+        alert("Receipt copied! Paste it into WhatsApp.");
     }
 
     function sendWhatsAppTotal() {
