@@ -7,82 +7,137 @@
     <style>
         :root { --violet: #9400D3; --gold: #DAA520; }
         body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 15px; margin: 0; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 6px solid var(--violet); max-width: 450px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 6px solid var(--violet); max-width: 450px; margin: auto; margin-bottom: 20px; }
         h2 { color: var(--violet); text-align: center; margin-bottom: 20px; }
         label { display: block; margin: 10px 0 5px; font-weight: bold; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 16px; }
         .btn-add { background: #3498db; }
         .btn-new { background: #7f8c8d; }
         .btn-save { background: #27ae60; }
         .btn-receipt { background: #8e44ad; }
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); }
-        .modal-content { background: white; margin: 10% auto; padding: 20px; width: 85%; border-radius: 10px; text-align: center; }
+        .modal-content { background: white; margin: 10% auto; padding: 20px; width: 85%; border-radius: 10px; text-align: center; max-width: 350px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>🌸 YARA FASHION</h2>
-    <div class="grid-2">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <div><label>Customer</label><input type="text" id="name" placeholder="Name"></div>
         <div><label>WhatsApp</label><input type="number" id="phone" placeholder="07xxxxxxxx"></div>
     </div>
-    <label>Fabric</label>
-    <select id="type"><option>40sP</option><option>60sP</option><option>Silk</option><option>Linen</option></select>
-    <div class="grid-2">
-        <div><label>Price</label><input type="number" id="price" value="0"></div>
-        <div><label>Yards</label><input type="number" id="yards" value="0"></div>
+    
+    <label>Fabric Selection</label>
+    <select id="type">
+        <option value="Custom">-- Choose Fabric --</option>
+        <option value="40sP">40sP</option>
+        <option value="60sP">60sP</option>
+        <option value="Silk">Silk</option>
+        <option value="Linen">Linen</option>
+        <option value="Cotton">Cotton</option>
+    </select>
+
+    <div class="grid-3">
+        <div><label>Cost</label><input type="number" id="cost" placeholder="0"></div>
+        <div><label>Price</label><input type="number" id="price" placeholder="0"></div>
+        <div><label>Yards</label><input type="number" id="yards" placeholder="0"></div>
     </div>
-    <div class="grid-2">
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <button class="btn btn-add" onclick="addItem()">➕ ADD TO BILL</button>
         <button class="btn btn-new" onclick="newCust()">👤 NEW CUSTOMER</button>
     </div>
+
     <div style="text-align:right; margin: 15px 0;">
         <label>Total LKR</label>
-        <div id="display-total" style="font-size:30px; font-weight:bold; color:var(--violet);">0</div>
+        <div id="display-total" style="font-size:32px; font-weight:bold; color:var(--violet);">0</div>
     </div>
-    <button class="btn btn-save" onclick="save()">✅ RECORD SALE</button>
-    <button class="btn btn-receipt" onclick="show()">📄 PREVIEW RECEIPT</button>
+
+    <button class="btn btn-save" onclick="saveSale()">✅ RECORD SALE</button>
+    <button class="btn btn-receipt" onclick="showReceipt()">📄 PREVIEW RECEIPT</button>
+</div>
+
+<div class="card">
+    <h3>📊 SALES HISTORY</h3>
+    <div id="sales-list"></div>
 </div>
 
 <div id="modal" class="modal">
     <div class="modal-content">
-        <img src="https://i.postimg.cc/mD8z778S/yara-logo.png" style="width:100px; margin-bottom:10px;">
-        <h2 style="margin:0;">YARA FASHION</h2>
-        <i style="color:var(--gold);">Crafted with Elegance</i><hr>
-        <div id="receipt-data" style="text-align:left; font-family:monospace; white-space:pre; margin:15px 0;"></div>
+        <img src="https://i.postimg.cc/mD8z778S/yara-logo.png" style="width:80px; margin-bottom:10px;">
+        <h2 style="margin:0; font-size: 20px; justify-content: center;">YARA FASHION</h2>
+        <i style="color:var(--gold); font-size: 14px;">Crafted with Elegance</i><hr>
+        <div id="receipt-data" style="text-align:left; font-family:monospace; white-space:pre; margin:15px 0; font-size: 13px;"></div>
         <button class="btn" style="background:black;" onclick="document.getElementById('modal').style.display='none'">CLOSE</button>
     </div>
 </div>
 
 <script>
     let bill = [];
+    let history = JSON.parse(localStorage.getItem('yara_history')) || [];
+
     function addItem() {
         const t = document.getElementById('type').value;
-        const p = parseFloat(document.getElementById('price').value);
-        const y = parseFloat(document.getElementById('yards').value);
+        const c = parseFloat(document.getElementById('cost').value) || 0;
+        const p = parseFloat(document.getElementById('price').value) || 0;
+        const y = parseFloat(document.getElementById('yards').value) || 0;
+        
         if(p > 0 && y > 0) {
-            bill.push({t, p, y, tot: p*y});
-            let sum = bill.reduce((a, b) => a + b.tot, 0);
-            document.getElementById('display-total').innerText = sum.toLocaleString();
-            alert("Added to bill!");
+            bill.push({t, c, p, y, tot: p*y});
+            updateUI();
+            alert("Added!");
+        } else { 
+            alert("Please enter Price and Yards"); 
         }
     }
-    function newCust() {
-        bill = []; document.getElementById('name').value = '';
-        document.getElementById('display-total').innerText = '0';
-        alert("Cleared for New Customer");
+
+    function updateUI() {
+        let sum = bill.reduce((a, b) => a + b.tot, 0);
+        document.getElementById('display-total').innerText = sum.toLocaleString();
     }
-    function show() {
+
+    function newCust() {
+        bill = []; 
+        document.getElementById('name').value = ''; 
+        document.getElementById('cost').value = '';
+        document.getElementById('price').value = '';
+        document.getElementById('yards').value = '';
+        updateUI();
+    }
+
+    function saveSale() {
+        const n = document.getElementById('name').value || "Cash Customer";
+        const t = document.getElementById('display-total').innerText;
+        if(t === "0") return;
+        history.unshift({ date: new Date().toLocaleDateString(), name: n, total: t });
+        localStorage.setItem('yara_history', JSON.stringify(history));
+        renderHistory();
+        alert("Sale Saved!");
+    }
+
+    function renderHistory() {
+        let h = '<table style="width:100%; border-collapse:collapse;"><tr><th style="text-align:left;">Date</th><th style="text-align:left;">Customer</th><th style="text-align:left;">Total</th></tr>';
+        history.slice(0, 10).forEach(s => h += `<tr style="border-bottom:1px solid #eee;"><td>${s.date}</td><td>${s.name}</td><td>${s.total}</td></tr>`);
+        document.getElementById('sales-list').innerHTML = h + '</table>';
+    }
+
+    function showReceipt() {
+        if(bill.length === 0) return alert("Add items!");
         let text = `Date: ${new Date().toLocaleDateString()}\n`;
-        bill.forEach(i => text += `${i.t}: ${i.p} x ${i.y} = ${i.tot}\n`);
-        text += `\nTOTAL: LKR ${document.getElementById('display-total').innerText}`;
+        text += `Customer: ${document.getElementById('name').value || "Guest"}\n\n`;
+        text += `ITEM         QTY    PRICE    TOTAL\n`;
+        text += `----------------------------------\n`;
+        bill.forEach(i => text += `${i.t.padEnd(12)} ${i.y.toString().padEnd(6)} ${i.p.toString().padEnd(8)} ${i.tot}\n`);
+        text += `----------------------------------\n`;
+        text += `TOTAL LKR: ${document.getElementById('display-total').innerText}`;
         document.getElementById('receipt-data').innerText = text;
         document.getElementById('modal').style.display = 'block';
     }
-    function save() { alert("Sale Saved!"); }
+
+    window.onload = renderHistory;
 </script>
 </body>
 </html>
