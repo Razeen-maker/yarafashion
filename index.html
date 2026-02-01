@@ -2,215 +2,185 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YARA FASHION MASTER POS</title>
     <style>
-        :root { --pink: #d53f8c; --blue: #3182ce; --green: #2f855a; --wa: #22c55e; --purple: #805ad5; --gray: #718096; --red: #e53e3e; --bg: #f7fafc; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 12px; background: var(--bg); color: #2d3748; }
-        .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 12px; border-left: 6px solid var(--pink); }
-        h2 { color: var(--pink); margin: 0 0 12px; font-size: 1.1rem; text-transform: uppercase; }
-        label { display: block; margin: 8px 0 2px; font-weight: 700; font-size: 0.75rem; color: #4a5568; }
-        input, select { width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 1rem; height: 46px; box-sizing: border-box; background: #fff; }
+        :root { --violet: #9400D3; --gold: #DAA520; --dark: #2c3e50; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 15px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 5px solid var(--violet); }
+        h2 { color: var(--violet); margin-top: 0; display: flex; align-items: center; gap: 10px; }
+        label { display: block; margin: 10px 0 5px; font-weight: bold; color: var(--dark); }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-        .btn { width: 100%; border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; height: 48px; }
-        .btn-add { background: var(--blue); }
-        .btn-new { background: #718096; } /* Gray for New Customer */
-        .btn-save { background: var(--green); }
-        .btn-wa { background: var(--wa); }
-        .btn-preview { background: var(--purple); }
-        .btn-share { background: #4a5568; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-        th { text-align: left; border-bottom: 2px solid #edf2f7; padding: 8px 4px; font-size: 0.7rem; color: #718096; text-transform: uppercase; }
-        td { padding: 10px 4px; border-bottom: 1px solid #edf2f7; font-size: 0.9rem; }
-        #receipt-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; padding: 15px; box-sizing: border-box; overflow-y: auto; }
-        .receipt-box { background: white; max-width: 380px; margin: auto; padding: 25px; border-radius: 4px; font-family: 'Courier New', monospace; color: #000; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px; transition: 0.3s; }
+        .btn-add { background: #3498db; }
+        .btn-new { background: #7f8c8d; }
+        .btn-save { background: #27ae60; width: 100%; }
+        .btn-wa { background: #25D366; }
+        .btn-receipt { background: #8e44ad; }
+        .btn:active { transform: scale(0.98); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th { background: #ecf0f1; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 10% auto; padding: 20px; width: 90%; max-width: 400px; border-radius: 10px; }
+        .receipt-text { font-family: monospace; white-space: pre-wrap; font-size: 14px; line-height: 1.2; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>🌸 CREATE BILL</h2>
-    <div class="grid-2">
-        <div><label>Customer</label><input type="text" id="custName" placeholder="Name"></div>
-        <div><label>WhatsApp</label><input type="number" id="custPhone" placeholder="07xxxxxxxx"></div>
-    </div>
-    <label>Fabric Type</label>
-    <select id="fabricSelect" onchange="checkNewFabric()">
-        <option value="">-- Choose Fabric --</option>
-        <option value="NEW" style="color:var(--blue); font-weight:bold;">+ ADD NEW TYPE</option>
-    </select>
-    <div class="grid-3" style="margin-top:5px;">
-        <div><label>Cost</label><input type="number" id="inBuy" placeholder="0"></div>
-        <div><label>Price</label><input type="number" id="inSell" placeholder="0"></div>
-        <div><label>Yards</label><input type="number" id="inQty" placeholder="0"></div>
-    </div>
     
+    <div class="grid-2">
+        <div><label>Customer</label><input type="text" id="cust-name" placeholder="Name"></div>
+        <div><label>WhatsApp</label><input type="number" id="cust-phone" placeholder="07xxxxxxxx"></div>
+    </div>
+
+    <label>Fabric Type</label>
+    <select id="fabric-type">
+        <option>-- Choose Fabric --</option>
+        <option>40sP</option><option>60sP</option><option>Cotton</option>
+        <option>Silk</option><option>Linen</option><option>Viscose</option>
+    </select>
+
+    <div class="grid-3">
+        <div><label>Cost</label><input type="number" id="cost" value="0"></div>
+        <div><label>Price</label><input type="number" id="price" value="0"></div>
+        <div><label>Yards</label><input type="number" id="yards" value="0"></div>
+    </div>
+
     <div class="grid-2">
         <button class="btn btn-add" onclick="addItem()">➕ ADD TO BILL</button>
         <button class="btn btn-new" onclick="newCustomer()">👤 NEW CUSTOMER</button>
     </div>
 
-    <table id="billTable" style="display:none;">
-        <thead><tr><th>Item</th><th>Yds</th><th>Total</th><th></th></tr></thead>
-        <tbody id="billBody"></tbody>
-    </table>
-    <div class="grid-2" style="border-top: 2px solid #f7fafc; margin-top: 15px; padding-top: 10px;">
-        <div><label>Discount</label><input type="number" id="inDisc" value="0" oninput="calculateNet()"></div>
-        <div style="text-align: right;"><label>Net Total</label><h2 id="netDisplay" style="margin:0; font-size: 1.5rem; color:#000;">0</h2></div>
+    <div class="grid-2" style="margin-top:20px;">
+        <div><label>Discount</label><input type="number" id="discount" value="0" oninput="calculateTotal()"></div>
+        <div style="text-align:right;"><label>Net Total</label><div id="net-total" style="font-size:24px; font-weight:bold;">0</div></div>
     </div>
-    <button class="btn btn-save" onclick="saveToHistory()">✅ RECORD & SAVE SALE</button>
+
+    <button class="btn btn-save" onclick="saveSale()">✅ RECORD & SAVE SALE</button>
+    
     <div class="grid-2">
-        <button class="btn btn-wa" onclick="sendWhatsAppTotal()">📱 WA TOTAL</button>
-        <button class="btn btn-preview" onclick="showReceipt()">📄 PREVIEW RECEIPT</button>
+        <button class="btn btn-wa" onclick="sendWhatsApp()">📱 WA TOTAL</button>
+        <button class="btn btn-receipt" onclick="showReceipt()">📄 PREVIEW RECEIPT</button>
     </div>
 </div>
 
-<div class="card" style="border-left-color: #2d3748;">
-    <h2 style="color: #2d3748;">📊 SALES HISTORY</h2>
-    <button class="btn" style="background: #2d3748;" onclick="copyFullReport()">📋 COPY REPORT FOR EXCEL</button>
-    <div id="historyBox" style="max-height: 150px; overflow-y: auto;">
-        <table>
-            <thead><tr><th>Date</th><th>Name</th><th>Net</th></tr></thead>
-            <tbody id="historyBody"></tbody>
-        </table>
-    </div>
-    <button class="btn" style="background:var(--red); height:30px; font-size:0.7rem; margin-top:10px;" onclick="clearData()">⚠️ RESET ALL</button>
+<div class="card" style="margin-top:20px;">
+    <h3>📊 SALES HISTORY</h3>
+    <button class="btn" style="background:#2c3e50; margin-bottom:10px;" onclick="copyForExcel()">📋 COPY REPORT FOR EXCEL</button>
+    <div id="sales-list"></div>
 </div>
 
-<div id="receipt-overlay">
-    <div class="receipt-box">
-        <div style="text-align:center; margin-bottom:15px;">
-            <img src="https://i.ibb.co/YBjX9yv/yara-logo.jpg" style="max-width: 100px; height: auto; border-radius: 8px;">
-            <h2 style="margin: 5px 0 0 0; color: #000;">YARA FASHION</h2>
-            <p style="font-style: italic; font-size: 0.75rem; margin: 2px 0; color: #d53f8c; font-weight: bold;">Crafted with Elegance</p>
-            <p style="font-size: 0.8rem; margin: 0;">Hambantota | 077 882 2514</p>
+<div id="receipt-modal" class="modal">
+    <div class="modal-content">
+        <div id="receipt-header" style="text-align:center; margin-bottom:15px;">
+            <img src="https://i.ibb.co/VWVm0YmC/yara-luxury-logo.png" alt="Logo" style="width:80px; margin-bottom:10px;">
+            <h2 style="margin:0; color:#9400D3; justify-content: center;">YARA FASHION</h2>
+            <i style="color:#DAA520; font-size:0.9em;">Crafted with Elegance</i><br>
+            <small>Hambantota | 077 882 2514</small>
         </div>
         <hr>
-        <p style="font-size:0.8rem;">Date: <span id="rDate"></span><br>Cust: <span id="rCust"></span></p>
-        <table style="width:100%; font-size:0.8rem;">
-            <thead><tr style="border-bottom: 1px solid #000;"><th align="left">Fabric</th><th align="center">Prc</th><th align="center">Qty</th><th align="right">Tot</th></tr></thead>
-            <tbody id="rItems"></tbody>
-        </table>
-        <div style="text-align:right; margin-top:10px;">
-            <p style="margin:2px 0;">Subtotal: LKR <span id="rSub">0</span></p>
-            <p style="margin:2px 0;">Discount: -LKR <span id="rDiscVal">0</span></p>
-            <hr>
-            <h3>TOTAL: LKR <span id="rNet">0</span></h3>
-        </div>
-        <button class="btn btn-share" onclick="shareReceipt()">📋 COPY & SHARE RECEIPT</button>
-        <button class="btn" style="background:#000;" onclick="document.getElementById('receipt-overlay').style.display='none'">CLOSE</button>
+        <div id="receipt-body" class="receipt-text"></div>
+        <hr>
+        <button class="btn" style="background:#506477;" onclick="copyReceipt()">📋 COPY & SHARE RECEIPT</button>
+        <button class="btn" style="background:black;" onclick="closeModal()">CLOSE</button>
     </div>
 </div>
 
 <script>
-    const fabrics = { "Rayon": 335, "M390": 390, "M690": 690, "LC": 390, "LCP": 490, "MAS": 350, "40sP": 490, "LIN": 490, "LINWB": 590, "BON": 490, "TIKTOK": 690, "BCHEK": 590, "PLOOM": 390, "SAT": 280, "VEL": 350, "KITY": 590, "POP1": 220, "POP2": 160, "CHEE1": 260, "CHEE2": 160, "MAL": 290, "FLAN": 490, "CURT90": 320, "CURTL": 260, "GAB": 135, "TEP": 125, "TEPS": 350, "GMET": 850, "CUTLO45": 850, "CUTLO1": 1450, "CUTLO2": 850, "FULEMB1": 1850, "FULEMB2": 1200, "TC1": 400, "TC2": 300, "STROU": 1080, "TMET1": 1200, "TMET2": 850, "GEBA": 690, "DENIM1": 1350, "DENIM2": 850 };
-    let currentBill = [];
-    const DB_KEY = "yara_pos_v4";
+    let currentItems = [];
+    let salesHistory = JSON.parse(localStorage.getItem('yara_sales')) || [];
 
-    function fillDropdown() {
-        const sel = document.getElementById('fabricSelect');
-        while(sel.options.length > 2) sel.remove(2);
-        Object.keys(fabrics).sort().forEach(f => { sel.add(new Option(f, f)); });
-    }
-    window.onload = () => { fillDropdown(); updateHistory(); };
-
-    function checkNewFabric() {
-        const s = document.getElementById('fabricSelect');
-        if(s.value === "NEW") {
-            let n = prompt("New Fabric Name:");
-            if(n) { fabrics[n] = 0; fillDropdown(); s.value = n; }
-        } else if(fabrics[s.value]) {
-            document.getElementById('inSell').value = fabrics[s.value];
+    function addItem() {
+        const type = document.getElementById('fabric-type').value;
+        const prc = parseFloat(document.getElementById('price').value);
+        const qty = parseFloat(document.getElementById('yards').value);
+        if(prc > 0 && qty > 0) {
+            currentItems.push({type, prc, qty, tot: prc * qty});
+            calculateTotal();
         }
     }
 
-    function addItem() {
-        const f = document.getElementById('fabricSelect').value;
-        const s = parseFloat(document.getElementById('inSell').value) || 0;
-        const q = parseFloat(document.getElementById('inQty').value) || 0;
-        const b = parseFloat(document.getElementById('inBuy').value) || 0;
-        if(!f || q <= 0) return alert("Select Fabric & Qty");
-        currentBill.push({ f, s, q, b, total: s*q });
-        renderBill();
-        document.getElementById('inQty').value = "";
+    function calculateTotal() {
+        let sub = currentItems.reduce((a, b) => a + b.tot, 0);
+        let disc = parseFloat(document.getElementById('discount').value) || 0;
+        document.getElementById('net-total').innerText = (sub - disc).toLocaleString();
     }
 
     function newCustomer() {
-        if(currentBill.length > 0 && !confirm("Current bill isn't saved. Start new customer anyway?")) return;
-        currentBill = [];
-        document.getElementById('custName').value = "";
-        document.getElementById('custPhone').value = "";
-        document.getElementById('inDisc').value = "0";
-        renderBill();
+        if(confirm("Start a new bill? Current items will be cleared.")) {
+            currentItems = [];
+            document.getElementById('cust-name').value = '';
+            document.getElementById('cust-phone').value = '';
+            document.getElementById('discount').value = '0';
+            calculateTotal();
+        }
     }
 
-    function renderBill() {
-        const body = document.getElementById('billBody');
-        body.innerHTML = currentBill.map((item, i) => `<tr><td>${item.f}</td><td>${item.q}</td><td>${item.total.toFixed(0)}</td><td><button onclick="currentBill.splice(${i},1);renderBill()">❌</button></td></tr>`).join('');
-        document.getElementById('billTable').style.display = currentBill.length ? 'table' : 'none';
-        calculateNet();
+    function saveSale() {
+        const name = document.getElementById('cust-name').value || "Cash Customer";
+        const total = document.getElementById('net-total').innerText;
+        const sale = { date: new Date().toLocaleDateString(), name, total };
+        salesHistory.unshift(sale);
+        localStorage.setItem('yara_sales', JSON.stringify(salesHistory));
+        renderHistory();
+        alert("Sale Recorded!");
     }
 
-    function calculateNet() {
-        let sub = currentBill.reduce((a, b) => a + b.total, 0);
-        let d = parseFloat(document.getElementById('inDisc').value) || 0;
-        document.getElementById('netDisplay').innerText = Math.round(sub - d);
-    }
-
-    function saveToHistory() {
-        let history = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
-        history.push({
-            date: new Date().toLocaleDateString(),
-            cust: document.getElementById('custName').value || "Cash Customer",
-            items: [...currentBill],
-            net: document.getElementById('netDisplay').innerText
+    function renderHistory() {
+        let html = '<table><tr><th>Date</th><th>Customer</th><th>Total</th></tr>';
+        salesHistory.forEach(s => {
+            html += `<tr><td>${s.date}</td><td>${s.name}</td><td>${s.total}</td></tr>`;
         });
-        localStorage.setItem(DB_KEY, JSON.stringify(history));
-        alert("Sale Saved!");
-        updateHistory();
-    }
-
-    function updateHistory() {
-        let history = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
-        const body = document.getElementById('historyBody');
-        body.innerHTML = history.slice().reverse().map(s => `<tr><td><small>${s.date}</small></td><td>${s.cust}</td><td>${s.net}</td></tr>`).join('');
+        document.getElementById('sales-list').innerHTML = html + '</table>';
     }
 
     function showReceipt() {
-        if(!currentBill.length) return;
-        document.getElementById('rDate').innerText = new Date().toLocaleDateString();
-        document.getElementById('rCust').innerText = document.getElementById('custName').value || "Customer";
-        document.getElementById('rItems').innerHTML = currentBill.map(i => `<tr><td>${i.f}</td><td align="center">${i.s}</td><td align="center">${i.q}</td><td align="right">${i.total.toFixed(0)}</td></tr>`).join('');
-        document.getElementById('rSub').innerText = currentBill.reduce((a, b) => a + b.total, 0);
-        document.getElementById('rDiscVal').innerText = document.getElementById('inDisc').value || 0;
-        document.getElementById('rNet').innerText = document.getElementById('netDisplay').innerText;
-        document.getElementById('receipt-overlay').style.display = 'block';
+        const name = document.getElementById('cust-name').value || "Customer";
+        const date = new Date().toLocaleDateString();
+        let body = `Date: ${date}\nCust: ${name}\n\n`;
+        body += `FABRIC        PRC      QTY      TOT\n`;
+        body += `------------------------------------\n`;
+        currentItems.forEach(i => {
+            body += `${i.type.padEnd(12)} ${i.prc.toString().padEnd(8)} ${i.qty.toString().padEnd(8)} ${i.tot}\n`;
+        });
+        body += `------------------------------------\n`;
+        body += `Subtotal: LKR ${currentItems.reduce((a,b)=>a+b.tot,0)}\n`;
+        body += `Discount: -LKR ${document.getElementById('discount').value}\n`;
+        body += `\nTOTAL: LKR ${document.getElementById('net-total').innerText}`;
+        
+        document.getElementById('receipt-body').innerText = body;
+        document.getElementById('receipt-modal').style.display = 'block';
     }
 
-    function shareReceipt() {
-        let text = `🌸 *YARA FASHION*\n*Crafted with Elegance*\nDate: ${new Date().toLocaleDateString()}\nCust: ${document.getElementById('custName').value || "Customer"}\n--------------------------\n`;
-        currentBill.forEach(i => { text += `${i.f} (${i.q} yds) @ ${i.s} = ${i.total.toFixed(0)}\n`; });
-        text += `--------------------------\nDiscount: -LKR ${document.getElementById('inDisc').value || 0}\n*TOTAL: LKR ${document.getElementById('netDisplay').innerText}*\nThank you!`;
-        navigator.clipboard.writeText(text);
-        alert("Receipt copied! Paste it into WhatsApp.");
+    function closeModal() { document.getElementById('receipt-modal').style.display = 'none'; }
+
+    function copyReceipt() {
+        const header = "YARA FASHION - Crafted with Elegance\n";
+        navigator.clipboard.writeText(header + document.getElementById('receipt-body').innerText);
+        alert("Receipt Copied for WhatsApp!");
     }
 
-    function sendWhatsAppTotal() {
-        const phone = document.getElementById('custPhone').value;
-        const msg = encodeURIComponent(`🌸 *YARA FASHION*\nTotal Bill: *LKR ${document.getElementById('netDisplay').innerText}*`);
-        window.open(`https://wa.me/94${phone}?text=${msg}`);
+    function sendWhatsApp() {
+        const name = document.getElementById('cust-name').value;
+        const total = document.getElementById('net-total').innerText;
+        const msg = `Hello ${name}, your total at Yara Fashion is LKR ${total}. Thank you!`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
     }
 
-    function copyFullReport() {
-        let history = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
-        let report = "DATE\tCUSTOMER\tFABRIC\tYARDS\tPRICE\tCOST\tTOTAL\tNET_BILL\n";
-        history.forEach(s => { s.items.forEach(i => { report += `${s.date}\t${s.cust}\t${i.f}\t${i.q}\t${i.s}\t${i.b}\t${i.total}\t${s.net}\n`; }); });
-        navigator.clipboard.writeText(report);
-        alert("Excel report copied!");
+    function copyForExcel() {
+        let csv = "Date,Customer,Total\n";
+        salesHistory.forEach(s => csv += `${s.date},${s.name},${s.total}\n`);
+        navigator.clipboard.writeText(csv);
+        alert("Report copied! Paste into Excel or Google Sheets.");
     }
 
-    function clearData() { if(confirm("Clear history?")) { localStorage.removeItem(DB_KEY); location.reload(); } }
+    window.onload = renderHistory;
 </script>
+
 </body>
 </html>
